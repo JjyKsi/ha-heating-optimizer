@@ -1,0 +1,14 @@
+{
+  "title": "Heating Optimizer",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Heating Optimizer",
+        "description": "Set up the Heating Optimizer integration."
+      }
+    },
+    "abort": {
+      "already_configured": "Only one Heating Optimizer configuration is supported."
+    }
+  }
+}

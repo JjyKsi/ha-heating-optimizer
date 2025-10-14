@@ -1,0 +1,17 @@
+{
+  "domain": "heating_optimizer",
+  "name": "Heating Optimizer",
+  "codeowners": [
+    "@jjyks"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/jjyks/ha-heating-optimizer",
+  "integration_type": "helper",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/jjyks/ha-heating-optimizer/issues",
+  "loggers": [
+    "custom_components.heating_optimizer"
+  ],
+  "requirements": [],
+  "version": "0.0.1"
+}
