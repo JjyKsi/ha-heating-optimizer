@@ -5,9 +5,16 @@ from __future__ import annotations
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.const import CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, LOGGER
+from .const import (
+    CONF_DEVICE_NAME,
+    CONF_TEMPERATURE_SENSOR,
+    DEFAULT_DEVICE_NAME,
+    DOMAIN,
+    LOGGER,
+)
 
 
 class HeatingOptimizerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -26,8 +33,18 @@ class HeatingOptimizerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is None:
             return self.async_show_form(
                 step_id="user",
-                data_schema=vol.Schema({}),
+                data_schema=vol.Schema(
+                    {
+                        vol.Optional(CONF_NAME, default=DEFAULT_DEVICE_NAME): str,
+                        vol.Required(CONF_TEMPERATURE_SENSOR): str,
+                    }
+                ),
                 description_placeholders={},
             )
 
-        return self.async_create_entry(title="Heating Optimizer", data={})
+        name = user_input.get(CONF_NAME, DEFAULT_DEVICE_NAME)
+        data = {
+            CONF_DEVICE_NAME: name,
+            CONF_TEMPERATURE_SENSOR: user_input[CONF_TEMPERATURE_SENSOR],
+        }
+        return self.async_create_entry(title=name, data=data)

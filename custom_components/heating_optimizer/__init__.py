@@ -8,8 +8,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, LOGGER
+from .coordinator import RuntimeData, async_setup_runtime
 
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -22,10 +23,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Heating Optimizer from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {}
+    runtime = await async_setup_runtime(hass, entry)
+    hass.data[DOMAIN][entry.entry_id] = runtime
 
-    if PLATFORMS:
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     LOGGER.debug("Config entry %s ready.", entry.entry_id)
     return True
@@ -33,12 +34,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a Heating Optimizer config entry."""
-    unload_ok = True
-    if PLATFORMS:
-        unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        runtime: RuntimeData | None = hass.data[DOMAIN].pop(entry.entry_id, None)
+        if runtime:
+            await runtime.async_shutdown()
         LOGGER.debug("Config entry %s unloaded.", entry.entry_id)
 
     return unload_ok
