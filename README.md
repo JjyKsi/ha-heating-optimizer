@@ -17,7 +17,7 @@ Custom Home Assistant integration intended to orchestrate more efficient heating
 4. Restart Home Assistant and add the integration via *Settings → Devices & services → Add integration*.
 
 ## Configuration
-The current config flow asks for the water-tank temperature sensor entity ID and creates a single integration instance. The integration publishes a plan sensor only; it does not toggle the underlying switches yet. Extend `config_flow.py` and `planner.py` as additional profiles and controls are implemented.
+The current config flow asks for the water-tank temperature sensor using the entity picker and creates a single integration instance. The integration publishes a plan sensor only; it does not toggle the underlying switches yet. Extend `config_flow.py` and `planner.py` as additional profiles and controls are implemented.
 
 ## Development
 - Use a Python 3.11+ environment.

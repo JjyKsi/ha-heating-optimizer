@@ -7,6 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.selector import selector
 
 from .const import (
     CONF_DEVICE_NAME,
@@ -36,7 +37,9 @@ class HeatingOptimizerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=vol.Schema(
                     {
                         vol.Optional(CONF_NAME, default=DEFAULT_DEVICE_NAME): str,
-                        vol.Required(CONF_TEMPERATURE_SENSOR): str,
+                        vol.Required(CONF_TEMPERATURE_SENSOR): selector(
+                            {"entity": {"domain": "sensor"}}
+                        ),
                     }
                 ),
                 description_placeholders={},

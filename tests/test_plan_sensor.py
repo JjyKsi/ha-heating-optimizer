@@ -17,7 +17,7 @@ from custom_components.heating_optimizer.const import (
     DEFAULT_DEVICE_NAME,
     DOMAIN,
 )
-from tests.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 

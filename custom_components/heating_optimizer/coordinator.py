@@ -184,8 +184,6 @@ class RuntimeData:
 
     async def async_shutdown(self) -> None:
         await self.plan.async_stop()
-        await self.plan.async_shutdown()
-        await self.price.async_shutdown()
 
 
 async def async_setup_runtime(hass: HomeAssistant, entry: ConfigEntry) -> RuntimeData:

@@ -20,6 +20,7 @@ This document captures the early design ideas for a generic heating optimization
 - **Plan Execution**: Use `switch.turn_on/off` and expose a virtual coordinator entity that publishes the current plan, next change, and reason (cheap price, maintain comfort, oil fallback).
 
 ## Current Implementation Snapshot
+- Config entry uses Home Assistant’s entity selector to bind the temperature sensor, reducing typos for device IDs.
 - `PriceCoordinator` downloads and caches quarter-hour prices from porssisahko.net for up to 24 h of planning.
 - `PlanCoordinator` consumes prices + the configured temperature sensor to simulate the water-tank trajectory with a loss model (≈1–2 °C/h) and simple staging heuristics.
 - A diagnostic sensor (`sensor.<device>_heating_plan_status`) shows the upcoming action (`idle`, `heat_primary`, `heat_dual`) plus a preview of the next slots without touching the actual relays.
