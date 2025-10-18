@@ -1,28 +1,28 @@
-# Heating Optimizer
+# Porssisahko
 
-Custom Home Assistant integration intended to orchestrate more efficient heating strategies. The first iteration focuses on modelling quarter-hour electricity prices and simulating heating plans for a domestic hot-water tank without actuating any relays yet.
+Custom Home Assistant integration that fetches quarter-hour electricity prices from [porssisahko.net v2](https://api.porssisahko.net/) and exposes them as sensor data for automations, dashboards, or further processing.
 
 ## Features
-- Config-entry based setup with per-device metadata stored in Home Assistant.
-- Price ingestion from [porssisahko.net v2](https://api.porssisahko.net/) via a cached coordinator.
-- Heuristic water-tank planner that respects comfort/min/max temperatures and price thresholds.
-- Diagnostic sensor exposing the upcoming heating plan (actions, prices, predicted temperatures).
-- Ready for HACS distribution (`hacs.json`, versioned manifest, README rendering).
-- Test harness based on `pytest-homeassistant-custom-component` to validate the config flow and planner logic.
+- Config-entry based setup that creates a single integration instance.
+- Price polling via a `DataUpdateCoordinator` with cached API responses.
+- Sensor `sensor.porssisahko_current_price` showing the current price (c/kWh) plus upcoming slots, min/max/average helpers, and attribution.
+- Binary sensors that reveal whether a cheaper slot exists within horizons from 15 minutes up to 24 hours.
+- HACS-ready layout (`custom_components/porssisahko`, `hacs.json`, rendered README).
+- Test harness built on `pytest-homeassistant-custom-component`.
 
 ## Installation
 1. Zip the repository contents or publish it to GitHub.
 2. In Home Assistant, open HACS → Integrations → ⋮ → Custom repositories.
-3. Add the repository URL, choose the **Integration** category, and install *Heating Optimizer*.
+3. Add the repository URL, choose the **Integration** category, and install *Porssisahko*.
 4. Restart Home Assistant and add the integration via *Settings → Devices & services → Add integration*.
 
 ## Configuration
-The current config flow asks for the water-tank temperature sensor using the entity picker and creates a single integration instance. The integration publishes a plan sensor only; it does not toggle the underlying switches yet. Extend `config_flow.py` and `planner.py` as additional profiles and controls are implemented.
+Only one instance is supported. Starting the config flow immediately creates the integration entry—no additional fields are required.
 
 ## Development
-- Use a Python 3.11+ environment.
-- Install development dependencies: `pip install -r requirements_dev.txt`.
-- Run tests with `pytest`.
-- Keep the manifest version in sync with your tags before releasing updates through HACS.
+- Create a Python 3.11+ environment.
+- Install development dependencies with `pip install -r requirements_dev.txt`.
+- Run tests with `pytest` (or `poetry run pytest` if you manage dependencies with Poetry).
+- Update the manifest version before tagging releases for HACS.
 
-Refer to the inline comments in `custom_components/heating_optimizer` for guidance on where to add sensors, coordinators, or services as the integration evolves.
+See the modules under `custom_components/porssisahko` for the coordinator and sensor implementations.

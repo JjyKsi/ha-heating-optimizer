@@ -1,4 +1,4 @@
-"""Heating Optimizer integration."""
+"""Porssisahko price integration."""
 
 from __future__ import annotations
 
@@ -10,18 +10,18 @@ from homeassistant.helpers.typing import ConfigType
 from .const import DOMAIN, LOGGER
 from .coordinator import RuntimeData, async_setup_runtime
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Heating Optimizer integration from YAML."""
+    """Set up the integration via YAML (not supported)."""
     hass.data.setdefault(DOMAIN, {})
     LOGGER.debug("YAML setup invoked; nothing to configure yet.")
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Heating Optimizer from a config entry."""
+    """Set up a config entry."""
     hass.data.setdefault(DOMAIN, {})
     runtime = await async_setup_runtime(hass, entry)
     hass.data[DOMAIN][entry.entry_id] = runtime
@@ -33,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a Heating Optimizer config entry."""
+    """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:

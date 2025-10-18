@@ -3,9 +3,9 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ha-heating-optimizer"
+name = "ha-porssisahko"
 version = "0.0.0"
-description = "Home Assistant Heating Optimizer integration boilerplate"
+description = "Home Assistant integration for porssisahko.net electricity prices"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []

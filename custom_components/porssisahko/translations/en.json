@@ -1,0 +1,26 @@
+{
+  "title": "Porssisahko",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Porssisahko",
+        "description": "Create a sensor for electricity prices from porssisahko.net."
+      }
+    },
+    "abort": {
+      "already_configured": "Only one Porssisahko configuration is supported."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": {
+        "name": "Current price"
+      }
+    },
+    "binary_sensor": {
+      "cheaper_within": {
+        "name": "Cheaper price within next {minutes} min"
+      }
+    }
+  }
+}
