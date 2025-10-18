@@ -14,7 +14,16 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, LOGGER, PRICE_API_URL, PRICE_CACHE_DURATION
+from .const import (
+    DOMAIN,
+    LOGGER,
+    PRICE_API_URL,
+    PRICE_CACHE_DURATION,
+    DAY_TIME_START_HOUR,
+    DAY_TIME_END_HOUR,
+    DAY_RATE_SURCHARGE,
+    NIGHT_RATE_SURCHARGE,
+)
 
 
 @dataclass(slots=True)
@@ -24,6 +33,8 @@ class PriceSlot:
     start: datetime
     end: datetime
     price: float
+    raw_price: float
+    surcharge: float
 
 
 async def async_fetch_prices(session) -> dict[str, Any]:
@@ -40,7 +51,7 @@ def _parse_price_slots(prices: list[dict[str, Any]]) -> list[PriceSlot]:
     slots: list[PriceSlot] = []
     for item in prices:
         try:
-            price = float(item["price"])
+            raw_price = float(item["price"])
             start = dt_util.parse_datetime(item["startDate"])
             end = dt_util.parse_datetime(item["endDate"])
         except (KeyError, TypeError, ValueError) as err:
@@ -49,11 +60,20 @@ def _parse_price_slots(prices: list[dict[str, Any]]) -> list[PriceSlot]:
         if start is None or end is None:
             raise UpdateFailed(f"Invalid timestamp in price payload: {item}")
 
+        local_hour = dt_util.as_local(start).hour
+        if DAY_TIME_START_HOUR <= local_hour <= DAY_TIME_END_HOUR:
+            surcharge = DAY_RATE_SURCHARGE
+        else:
+            surcharge = NIGHT_RATE_SURCHARGE
+        price = raw_price + surcharge
+
         slots.append(
             PriceSlot(
                 start=start.astimezone(timezone.utc),
                 end=end.astimezone(timezone.utc),
                 price=price,
+                raw_price=raw_price,
+                surcharge=surcharge,
             )
         )
     return slots

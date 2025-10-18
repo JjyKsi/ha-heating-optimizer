@@ -19,7 +19,7 @@
     },
     "binary_sensor": {
       "cheaper_within": {
-        "name": "Cheaper price within next {minutes} min"
+        "name": "Price drop within {window}"
       }
     }
   }

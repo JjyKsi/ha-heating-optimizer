@@ -71,6 +71,8 @@ class HeatingOptimizerPriceSensor(CoordinatorEntity[PriceCoordinator], SensorEnt
         if current:
             attributes["current_start"] = format_slot_time(current.start)
             attributes["current_end"] = format_slot_time(current.end)
+            attributes["current_raw_price"] = round(current.raw_price, 4)
+            attributes["current_surcharge"] = round(current.surcharge, 4)
 
         upcoming = [slot for slot in slots if slot.start > now]
         if upcoming:
@@ -92,6 +94,8 @@ def _serialize_slots(slots: Iterable[PriceSlot]) -> list[dict[str, Any]]:
             "start": format_slot_time(slot.start),
             "end": format_slot_time(slot.end),
             "price": round(slot.price, 4),
+            "raw_price": round(slot.raw_price, 4),
+            "surcharge": round(slot.surcharge, 4),
         }
         for slot in slots
     ]

@@ -12,7 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN
+from .const import CHEAPER_THRESHOLD, DOMAIN
 from .coordinator import PriceCoordinator, PriceSlot, RuntimeData
 from .helpers import current_slot, format_slot_time, slot_for_time
 
@@ -53,10 +53,16 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
     ) -> None:
         super().__init__(coordinator)
         self._horizon_minutes = minutes
+        if minutes in (15, 30, 45):
+            window = f"{minutes} min"
+        else:
+            hours = minutes // 60
+            window = f"{hours} h"
+        self._window_label = window
         self._offsets: tuple[int, ...] = tuple(range(0, minutes + 15, 15))
         self._cached_attributes: dict[str, Any] | None = None
 
-        self._attr_translation_placeholders = {"minutes": str(minutes)}
+        self._attr_translation_placeholders = {"window": self._window_label}
         self._attr_unique_id = f"{entry_id}_cheaper_{minutes}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry_id)},
@@ -99,22 +105,28 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
             if slot is None or slot in evaluated:
                 continue
             evaluated.append(slot)
-            if slot.price < baseline:
+            if baseline - slot.price >= CHEAPER_THRESHOLD:
                 cheaper_match = slot
                 break
 
         attributes: dict[str, Any] = {
             "minutes": self._horizon_minutes,
+            "window": self._window_label,
             "reference_price": round(baseline, 4),
+            "reference_raw_price": round(current.raw_price, 4),
+            "reference_surcharge": round(current.surcharge, 4),
             "reference_start": format_slot_time(current.start),
             "reference_end": format_slot_time(current.end),
             "slots_checked": len(evaluated),
+            "threshold": CHEAPER_THRESHOLD,
         }
 
         if cheaper_match:
             attributes.update(
                 {
                     "cheaper_price": round(cheaper_match.price, 4),
+                    "cheaper_raw_price": round(cheaper_match.raw_price, 4),
+                    "cheaper_surcharge": round(cheaper_match.surcharge, 4),
                     "cheaper_start": format_slot_time(cheaper_match.start),
                     "cheaper_end": format_slot_time(cheaper_match.end),
                 }

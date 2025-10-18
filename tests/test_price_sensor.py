@@ -10,7 +10,14 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.heating_optimizer.const import ATTRIBUTION, DOMAIN
+from custom_components.heating_optimizer.const import (
+    ATTRIBUTION,
+    DOMAIN,
+    DAY_RATE_SURCHARGE,
+    DAY_TIME_END_HOUR,
+    DAY_TIME_START_HOUR,
+    NIGHT_RATE_SURCHARGE,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
@@ -61,6 +68,15 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
+    def _surcharge_for(index: int) -> float:
+        slot_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(minutes=15 * index)
+        local_hour = slot_time.astimezone(timezone.utc).hour
+        if DAY_TIME_START_HOUR <= local_hour <= DAY_TIME_END_HOUR:
+            return DAY_RATE_SURCHARGE
+        return NIGHT_RATE_SURCHARGE
+
+    adjusted_prices = [base + _surcharge_for(idx) for idx, base in enumerate(prices)]
+
     entity_registry = er.async_get(hass)
     entity_id = entity_registry.async_get_entity_id(
         "sensor", DOMAIN, f"{entry.entry_id}_current_price"
@@ -69,13 +85,15 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
 
     state = hass.states.get(entity_id)
     assert state is not None
-    assert state.state == "8.0"
+    assert float(state.state) == pytest.approx(adjusted_prices[0], abs=1e-4)
 
     attributes = state.attributes
     assert attributes["attribution"] == ATTRIBUTION
-    assert attributes["min_price"] == pytest.approx(min(prices), abs=1e-4)
-    assert attributes["max_price"] == pytest.approx(max(prices), abs=1e-4)
-    assert attributes["average_price"] == pytest.approx(sum(prices) / len(prices), abs=1e-4)
+    assert attributes["min_price"] == pytest.approx(min(adjusted_prices), abs=1e-4)
+    assert attributes["max_price"] == pytest.approx(max(adjusted_prices), abs=1e-4)
+    assert attributes["average_price"] == pytest.approx(sum(adjusted_prices) / len(adjusted_prices), abs=1e-4)
+    assert attributes["current_raw_price"] == pytest.approx(prices[0], abs=1e-4)
+    assert attributes["current_surcharge"] == pytest.approx(_surcharge_for(0), abs=1e-4)
 
     assert attributes["current_start"] == "2024-06-01T06:00+00:00"
     assert attributes["current_end"] == "2024-06-01T06:15+00:00"
@@ -85,5 +103,7 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
     assert isinstance(upcoming, list)
     assert upcoming
     # First upcoming slot corresponds to the second entry (3.0 c/kWh).
-    assert upcoming[0]["price"] == 3.0
+    assert upcoming[0]["price"] == pytest.approx(adjusted_prices[1], abs=1e-4)
+    assert upcoming[0]["raw_price"] == pytest.approx(prices[1], abs=1e-4)
+    assert upcoming[0]["surcharge"] == pytest.approx(_surcharge_for(1), abs=1e-4)
     assert upcoming[0]["start"] == "2024-06-01T06:15+00:00"

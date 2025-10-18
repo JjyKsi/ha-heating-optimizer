@@ -10,7 +10,11 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.heating_optimizer.const import DOMAIN
+from custom_components.heating_optimizer.const import (
+    CHEAPER_THRESHOLD,
+    DOMAIN,
+    NIGHT_RATE_SURCHARGE,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
@@ -67,6 +71,10 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
     horizons = (15, 60, 180, 1440)
 
     for minutes in horizons:
+        if minutes in (15, 30, 45):
+            expected_window = f"{minutes} min"
+        else:
+            expected_window = f"{minutes // 60} h"
         entity_id = entity_registry.async_get_entity_id(
             "binary_sensor", DOMAIN, f"{entry.entry_id}_cheaper_{minutes}"
         )
@@ -75,6 +83,10 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
         assert state is not None
         assert state.state == "on"
         assert state.attributes.get("minutes") == minutes
+        assert state.attributes.get("window") == expected_window
+        assert state.attributes.get("reference_raw_price") == pytest.approx(prices[0], abs=1e-4)
+        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE, abs=1e-4)
+        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD
         assert "cheaper_price" in state.attributes
 
 
@@ -112,6 +124,10 @@ async def test_binary_sensors_off_without_cheaper_prices(hass: HomeAssistant) ->
     horizons = (15, 60, 180, 1440)
 
     for minutes in horizons:
+        if minutes in (15, 30, 45):
+            expected_window = f"{minutes} min"
+        else:
+            expected_window = f"{minutes // 60} h"
         entity_id = entity_registry.async_get_entity_id(
             "binary_sensor", DOMAIN, f"{entry.entry_id}_cheaper_{minutes}"
         )
@@ -119,4 +135,49 @@ async def test_binary_sensors_off_without_cheaper_prices(hass: HomeAssistant) ->
         state = hass.states.get(entity_id)
         assert state is not None
         assert state.state == "off"
+        assert state.attributes.get("window") == expected_window
+        assert state.attributes.get("reference_raw_price") == pytest.approx(prices[0], abs=1e-4)
+        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE, abs=1e-4)
+        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD
         assert "cheaper_price" not in state.attributes
+
+
+async def test_binary_sensors_threshold_respected(hass: HomeAssistant) -> None:
+    """Cheaper price must beat the threshold to trigger."""
+    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Heating Optimizer")
+    entry.add_to_hass(hass)
+
+    now = datetime(2024, 6, 1, 6, 5, tzinfo=timezone.utc)
+    # The second slot is only 0.005 cheaper (below threshold 0.01).
+    prices = [8.0, 7.995, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6]
+    payload = _build_price_payload(now.replace(minute=0, second=0, microsecond=0), prices)
+
+    with (
+        patch(
+            "custom_components.heating_optimizer.coordinator.async_fetch_prices",
+            AsyncMock(return_value=payload),
+        ),
+        patch(
+            "custom_components.heating_optimizer.coordinator.dt_util.utcnow",
+            return_value=now,
+        ),
+        patch(
+            "custom_components.heating_optimizer.sensor.dt_util.utcnow",
+            return_value=now,
+        ),
+        patch(
+            "custom_components.heating_optimizer.binary_sensor.dt_util.utcnow",
+            return_value=now,
+        ),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    entity_registry = er.async_get(hass)
+    entity_id = entity_registry.async_get_entity_id(
+        "binary_sensor", DOMAIN, f"{entry.entry_id}_cheaper_15"
+    )
+    assert entity_id is not None
+    state = hass.states.get(entity_id)
+    assert state is not None
+    assert state.state == "off"
