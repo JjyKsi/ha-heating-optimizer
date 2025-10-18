@@ -11,9 +11,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from custom_components.heating_optimizer.const import (
-    CHEAPER_THRESHOLD,
+    CHEAPER_THRESHOLD_CENT,
     DOMAIN,
-    NIGHT_RATE_SURCHARGE,
+    NIGHT_RATE_SURCHARGE_CENT,
 )
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -43,7 +43,7 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
     entry.add_to_hass(hass)
 
     now = datetime(2024, 6, 1, 6, 5, tzinfo=timezone.utc)
-    prices = [8.0, 7.5, 8.2, 8.1, 7.0, 6.8, 9.0, 8.6]
+    prices = [8.0, 6.5, 8.2, 8.1, 7.0, 6.8, 9.0, 8.6]
     payload = _build_price_payload(now.replace(minute=0, second=0, microsecond=0), prices)
 
     with (
@@ -85,8 +85,8 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
         assert state.attributes.get("minutes") == minutes
         assert state.attributes.get("window") == expected_window
         assert state.attributes.get("reference_raw_price") == pytest.approx(prices[0], abs=1e-4)
-        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE, abs=1e-4)
-        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD
+        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE_CENT, abs=1e-4)
+        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD_CENT
         assert "cheaper_price" in state.attributes
 
 
@@ -137,8 +137,8 @@ async def test_binary_sensors_off_without_cheaper_prices(hass: HomeAssistant) ->
         assert state.state == "off"
         assert state.attributes.get("window") == expected_window
         assert state.attributes.get("reference_raw_price") == pytest.approx(prices[0], abs=1e-4)
-        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE, abs=1e-4)
-        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD
+        assert state.attributes.get("reference_surcharge") == pytest.approx(NIGHT_RATE_SURCHARGE_CENT, abs=1e-4)
+        assert state.attributes.get("threshold") == CHEAPER_THRESHOLD_CENT
         assert "cheaper_price" not in state.attributes
 
 

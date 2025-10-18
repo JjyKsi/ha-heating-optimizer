@@ -12,7 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from .const import CHEAPER_THRESHOLD, DOMAIN
+from .const import CHEAPER_THRESHOLD_CENT, DOMAIN
 from .coordinator import PriceCoordinator, PriceSlot, RuntimeData
 from .helpers import current_slot, format_slot_time, slot_for_time
 
@@ -105,7 +105,7 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
             if slot is None or slot in evaluated:
                 continue
             evaluated.append(slot)
-            if baseline - slot.price >= CHEAPER_THRESHOLD:
+            if baseline - slot.price >= CHEAPER_THRESHOLD_CENT:
                 cheaper_match = slot
                 break
 
@@ -118,7 +118,7 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
             "reference_start": format_slot_time(current.start),
             "reference_end": format_slot_time(current.end),
             "slots_checked": len(evaluated),
-            "threshold": CHEAPER_THRESHOLD,
+            "threshold": CHEAPER_THRESHOLD_CENT,
         }
 
         if cheaper_match:

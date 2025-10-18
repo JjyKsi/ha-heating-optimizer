@@ -13,8 +13,8 @@ PRICE_CACHE_DURATION: Final = timedelta(hours=1)
 ATTRIBUTION: Final = "Data provided by porssisahko.net"
 DAY_TIME_START_HOUR: Final = 7
 DAY_TIME_END_HOUR: Final = 22
-DAY_RATE_SURCHARGE: Final = 0.0255
-NIGHT_RATE_SURCHARGE: Final = 0.0112
-CHEAPER_THRESHOLD: Final = 0.01  # € (>=1 cent lower)
+DAY_RATE_SURCHARGE_CENT: Final = 2.55  # c/kWh
+NIGHT_RATE_SURCHARGE_CENT: Final = 1.12  # c/kWh
+CHEAPER_THRESHOLD_CENT: Final = 1.0  # c/kWh difference
 
 LOGGER = logging.getLogger(__package__)

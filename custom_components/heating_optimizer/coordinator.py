@@ -21,8 +21,8 @@ from .const import (
     PRICE_CACHE_DURATION,
     DAY_TIME_START_HOUR,
     DAY_TIME_END_HOUR,
-    DAY_RATE_SURCHARGE,
-    NIGHT_RATE_SURCHARGE,
+    DAY_RATE_SURCHARGE_CENT,
+    NIGHT_RATE_SURCHARGE_CENT,
 )
 
 
@@ -62,9 +62,9 @@ def _parse_price_slots(prices: list[dict[str, Any]]) -> list[PriceSlot]:
 
         local_hour = dt_util.as_local(start).hour
         if DAY_TIME_START_HOUR <= local_hour <= DAY_TIME_END_HOUR:
-            surcharge = DAY_RATE_SURCHARGE
+            surcharge = DAY_RATE_SURCHARGE_CENT
         else:
-            surcharge = NIGHT_RATE_SURCHARGE
+            surcharge = NIGHT_RATE_SURCHARGE_CENT
         price = raw_price + surcharge
 
         slots.append(

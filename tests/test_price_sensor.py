@@ -13,10 +13,10 @@ from homeassistant.helpers import entity_registry as er
 from custom_components.heating_optimizer.const import (
     ATTRIBUTION,
     DOMAIN,
-    DAY_RATE_SURCHARGE,
+    DAY_RATE_SURCHARGE_CENT,
     DAY_TIME_END_HOUR,
     DAY_TIME_START_HOUR,
-    NIGHT_RATE_SURCHARGE,
+    NIGHT_RATE_SURCHARGE_CENT,
 )
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -72,8 +72,8 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
         slot_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(minutes=15 * index)
         local_hour = slot_time.astimezone(timezone.utc).hour
         if DAY_TIME_START_HOUR <= local_hour <= DAY_TIME_END_HOUR:
-            return DAY_RATE_SURCHARGE
-        return NIGHT_RATE_SURCHARGE
+            return DAY_RATE_SURCHARGE_CENT
+        return NIGHT_RATE_SURCHARGE_CENT
 
     adjusted_prices = [base + _surcharge_for(idx) for idx, base in enumerate(prices)]
 
