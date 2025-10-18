@@ -20,6 +20,9 @@
     "binary_sensor": {
       "cheaper_within": {
         "name": "Price drop within {window}"
+      },
+      "increase_within": {
+        "name": "Price rise within {window}"
       }
     }
   }

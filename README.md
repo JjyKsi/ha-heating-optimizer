@@ -7,7 +7,7 @@ Custom Home Assistant integration that fetches quarter-hour electricity prices f
 - Price polling via a `DataUpdateCoordinator` with cached API responses.
 - Sensor `sensor.heating_optimizer_current_price` showing the current price (c/kWh) plus upcoming slots, min/max/average helpers, and attribution.
 - Automatic day/night delivery adders (2.55 ¢ between 07:00–22:00, 1.12 ¢ overnight) applied to every slot.
-- Binary sensors that reveal whether a cheaper slot exists within horizons from 15 minutes up to 24 hours.
+- Binary sensors that reveal whether a cheaper or more expensive slot exists within horizons from 15 minutes up to 24 hours.
 - HACS-ready layout (`custom_components/heating_optimizer`, `hacs.json`, rendered README).
 - Test harness built on `pytest-homeassistant-custom-component`.
 

@@ -24,15 +24,24 @@ async def async_setup_entry(
 ) -> None:
     """Set up binary sensors for a config entry."""
     runtime: RuntimeData = hass.data[DOMAIN][entry.entry_id]
-    entities = [
-        CheaperPriceBinarySensor(
-            entry_id=entry.entry_id,
-            entry_title=entry.title,
-            coordinator=runtime.price,
-            minutes=minutes,
+    entities = []
+    for minutes in HORIZONS_MINUTES:
+        entities.extend(
+            [
+                CheaperPriceBinarySensor(
+                    entry_id=entry.entry_id,
+                    entry_title=entry.title,
+                    coordinator=runtime.price,
+                    minutes=minutes,
+                ),
+                IncreasePriceBinarySensor(
+                    entry_id=entry.entry_id,
+                    entry_title=entry.title,
+                    coordinator=runtime.price,
+                    minutes=minutes,
+                ),
+            ]
         )
-        for minutes in HORIZONS_MINUTES
-    ]
     async_add_entities(entities)
 
 
@@ -133,3 +142,102 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
             )
 
         return cheaper_match is not None, attributes
+
+
+class IncreasePriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensorEntity):
+    """Indicate if a price increase occurs within the horizon."""
+
+    _attr_has_entity_name = True
+    _attr_icon = "mdi:arrow-up-bold"
+    _attr_translation_key = "increase_within"
+
+    def __init__(
+        self,
+        *,
+        entry_id: str,
+        entry_title: str | None,
+        coordinator: PriceCoordinator,
+        minutes: int,
+    ) -> None:
+        super().__init__(coordinator)
+        self._horizon_minutes = minutes
+        if minutes in (15, 30, 45):
+            window = f"{minutes} min"
+        else:
+            hours = minutes // 60
+            window = f"{hours} h"
+        self._window_label = window
+        self._offsets: tuple[int, ...] = tuple(range(0, minutes + 15, 15))
+        self._cached_attributes: dict[str, Any] | None = None
+
+        self._attr_translation_placeholders = {"window": self._window_label}
+        self._attr_unique_id = f"{entry_id}_increase_{minutes}"
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, entry_id)},
+            "name": entry_title or "Heating Optimizer",
+            "manufacturer": "porssisahko.net",
+            "configuration_url": "https://api.porssisahko.net/",
+        }
+
+    @property
+    def available(self) -> bool:
+        return current_slot(self.coordinator.data, now=dt_util.utcnow()) is not None
+
+    @property
+    def is_on(self) -> bool:
+        state, metadata = self._evaluate()
+        self._cached_attributes = metadata
+        return state
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        if self._cached_attributes is None:
+            _, metadata = self._evaluate()
+            self._cached_attributes = metadata
+        return self._cached_attributes or {}
+
+    def _evaluate(self) -> tuple[bool, dict[str, Any] | None]:
+        slots = self.coordinator.data
+        now = dt_util.utcnow()
+        current = current_slot(slots, now=now)
+        if slots is None or current is None:
+            return False, None
+
+        baseline = current.price
+        evaluated: list[PriceSlot] = []
+        increase_match: PriceSlot | None = None
+
+        for offset in self._offsets:
+            target = current.start + timedelta(minutes=offset)
+            slot = slot_for_time(slots, target)
+            if slot is None or slot in evaluated:
+                continue
+            evaluated.append(slot)
+            if slot.price - baseline >= CHEAPER_THRESHOLD_CENT:
+                increase_match = slot
+                break
+
+        attributes: dict[str, Any] = {
+            "minutes": self._horizon_minutes,
+            "window": self._window_label,
+            "reference_price": round(baseline, 4),
+            "reference_raw_price": round(current.raw_price, 4),
+            "reference_surcharge": round(current.surcharge, 4),
+            "reference_start": format_slot_time(current.start),
+            "reference_end": format_slot_time(current.end),
+            "slots_checked": len(evaluated),
+            "threshold": CHEAPER_THRESHOLD_CENT,
+        }
+
+        if increase_match:
+            attributes.update(
+                {
+                    "increase_price": round(increase_match.price, 4),
+                    "increase_raw_price": round(increase_match.raw_price, 4),
+                    "increase_surcharge": round(increase_match.surcharge, 4),
+                    "increase_start": format_slot_time(increase_match.start),
+                    "increase_end": format_slot_time(increase_match.end),
+                }
+            )
+
+        return increase_match is not None, attributes
