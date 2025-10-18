@@ -10,7 +10,7 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.porssisahko.const import DOMAIN
+from custom_components.heating_optimizer.const import DOMAIN
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
@@ -35,7 +35,7 @@ def _build_price_payload(start: datetime, prices: list[float]) -> dict:
 
 async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None:
     """Binary sensors should turn on when cheaper slots exist within the horizon."""
-    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Porssisahko")
+    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Heating Optimizer")
     entry.add_to_hass(hass)
 
     now = datetime(2024, 6, 1, 6, 5, tzinfo=timezone.utc)
@@ -44,19 +44,19 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.porssisahko.coordinator.async_fetch_prices",
+            "custom_components.heating_optimizer.coordinator.async_fetch_prices",
             AsyncMock(return_value=payload),
         ),
         patch(
-            "custom_components.porssisahko.coordinator.dt_util.utcnow",
+            "custom_components.heating_optimizer.coordinator.dt_util.utcnow",
             return_value=now,
         ),
         patch(
-            "custom_components.porssisahko.sensor.dt_util.utcnow",
+            "custom_components.heating_optimizer.sensor.dt_util.utcnow",
             return_value=now,
         ),
         patch(
-            "custom_components.porssisahko.binary_sensor.dt_util.utcnow",
+            "custom_components.heating_optimizer.binary_sensor.dt_util.utcnow",
             return_value=now,
         ),
     ):
@@ -80,7 +80,7 @@ async def test_binary_sensors_detect_cheaper_prices(hass: HomeAssistant) -> None
 
 async def test_binary_sensors_off_without_cheaper_prices(hass: HomeAssistant) -> None:
     """Binary sensors should stay off when no cheaper slot exists."""
-    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Porssisahko")
+    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Heating Optimizer")
     entry.add_to_hass(hass)
 
     now = datetime(2024, 6, 1, 6, 5, tzinfo=timezone.utc)
@@ -89,19 +89,19 @@ async def test_binary_sensors_off_without_cheaper_prices(hass: HomeAssistant) ->
 
     with (
         patch(
-            "custom_components.porssisahko.coordinator.async_fetch_prices",
+            "custom_components.heating_optimizer.coordinator.async_fetch_prices",
             AsyncMock(return_value=payload),
         ),
         patch(
-            "custom_components.porssisahko.coordinator.dt_util.utcnow",
+            "custom_components.heating_optimizer.coordinator.dt_util.utcnow",
             return_value=now,
         ),
         patch(
-            "custom_components.porssisahko.sensor.dt_util.utcnow",
+            "custom_components.heating_optimizer.sensor.dt_util.utcnow",
             return_value=now,
         ),
         patch(
-            "custom_components.porssisahko.binary_sensor.dt_util.utcnow",
+            "custom_components.heating_optimizer.binary_sensor.dt_util.utcnow",
             return_value=now,
         ),
     ):

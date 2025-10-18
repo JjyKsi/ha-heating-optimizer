@@ -1,4 +1,4 @@
-"""Config flow for the Porssisahko integration."""
+"""Config flow for the Heating Optimizer integration."""
 
 from __future__ import annotations
 
@@ -9,10 +9,10 @@ from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN, LOGGER
 
-DEFAULT_TITLE = "Porssisahko"
+DEFAULT_TITLE = "Heating Optimizer"
 
 
-class PorssisahkoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class HeatingOptimizerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle the config flow."""
 
     VERSION = 1

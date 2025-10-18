@@ -1,1 +1,1 @@
-"""Tests for the Porssisahko integration."""
+"""Tests for the Heating Optimizer integration."""

@@ -1,6 +1,6 @@
 {
-  "domain": "porssisahko",
-  "name": "Porssisahko",
+  "domain": "heating_optimizer",
+  "name": "Heating Optimizer",
   "codeowners": [
     "@jjyks"
   ],
@@ -10,7 +10,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jjyks/ha-heating-optimizer/issues",
   "loggers": [
-    "custom_components.porssisahko"
+    "custom_components.heating_optimizer"
   ],
   "requirements": [],
   "version": "0.0.1"

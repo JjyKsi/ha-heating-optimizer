@@ -1,4 +1,4 @@
-"""Coordinators for the Porssisahko integration."""
+"""Coordinators for the Heating Optimizer integration."""
 
 from __future__ import annotations
 

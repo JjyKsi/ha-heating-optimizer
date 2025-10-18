@@ -1,4 +1,4 @@
-"""Porssisahko price integration."""
+"""Heating Optimizer price integration."""
 
 from __future__ import annotations
 

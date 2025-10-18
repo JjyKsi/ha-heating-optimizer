@@ -24,7 +24,7 @@ async def async_setup_entry(
     runtime: RuntimeData = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         [
-            PorssisahkoPriceSensor(
+            HeatingOptimizerPriceSensor(
                 entry_id=entry.entry_id,
                 entry_title=entry.title,
                 coordinator=runtime.price,
@@ -33,7 +33,7 @@ async def async_setup_entry(
     )
 
 
-class PorssisahkoPriceSensor(CoordinatorEntity[PriceCoordinator], SensorEntity):
+class HeatingOptimizerPriceSensor(CoordinatorEntity[PriceCoordinator], SensorEntity):
     """Sensor reporting the current electricity price."""
 
     _attr_has_entity_name = True
@@ -48,7 +48,7 @@ class PorssisahkoPriceSensor(CoordinatorEntity[PriceCoordinator], SensorEntity):
         self._attr_unique_id = f"{entry_id}_current_price"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry_id)},
-            "name": entry_title or "Porssisahko",
+            "name": entry_title or "Heating Optimizer",
             "manufacturer": "porssisahko.net",
             "configuration_url": "https://api.porssisahko.net/",
         }

@@ -60,7 +60,7 @@ class CheaperPriceBinarySensor(CoordinatorEntity[PriceCoordinator], BinarySensor
         self._attr_unique_id = f"{entry_id}_cheaper_{minutes}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry_id)},
-            "name": entry_title or "Porssisahko",
+            "name": entry_title or "Heating Optimizer",
             "manufacturer": "porssisahko.net",
             "configuration_url": "https://api.porssisahko.net/",
         }

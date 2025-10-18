@@ -1,14 +1,14 @@
 {
-  "title": "Porssisahko",
+  "title": "Heating Optimizer",
   "config": {
     "step": {
       "user": {
-        "title": "Porssisahko",
+        "title": "Heating Optimizer",
         "description": "Create a sensor for electricity prices from porssisahko.net."
       }
     },
     "abort": {
-      "already_configured": "Only one Porssisahko configuration is supported."
+      "already_configured": "Only one Heating Optimizer configuration is supported."
     }
   },
   "entity": {

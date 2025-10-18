@@ -10,7 +10,7 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.porssisahko.const import ATTRIBUTION, DOMAIN
+from custom_components.heating_optimizer.const import ATTRIBUTION, DOMAIN
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
@@ -37,7 +37,7 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
     """Verify the price sensor publishes the current price and metadata."""
     await hass.config.async_set_time_zone("UTC")
 
-    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Porssisahko")
+    entry = MockConfigEntry(domain=DOMAIN, data={}, title="Heating Optimizer")
     entry.add_to_hass(hass)
 
     now = datetime(2024, 6, 1, 6, 5, tzinfo=timezone.utc)
@@ -46,15 +46,15 @@ async def test_price_sensor_exposes_current_and_future_prices(hass: HomeAssistan
 
     with (
         patch(
-            "custom_components.porssisahko.coordinator.async_fetch_prices",
+            "custom_components.heating_optimizer.coordinator.async_fetch_prices",
             AsyncMock(return_value=payload),
         ),
         patch(
-            "custom_components.porssisahko.coordinator.dt_util.utcnow",
+            "custom_components.heating_optimizer.coordinator.dt_util.utcnow",
             return_value=now,
         ),
         patch(
-            "custom_components.porssisahko.sensor.dt_util.utcnow",
+            "custom_components.heating_optimizer.sensor.dt_util.utcnow",
             return_value=now,
         ),
     ):

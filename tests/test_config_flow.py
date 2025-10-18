@@ -1,4 +1,4 @@
-"""Test the Porssisahko config flow."""
+"""Test the Heating Optimizer config flow."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import pytest
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
-from custom_components.porssisahko.const import DOMAIN
+from custom_components.heating_optimizer.const import DOMAIN
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 
@@ -18,7 +18,7 @@ async def test_user_flow_single_instance(hass: HomeAssistant) -> None:
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Porssisahko"
+    assert result["title"] == "Heating Optimizer"
     assert result["data"] == {}
 
     # Second attempt should abort because only one instance is allowed.
